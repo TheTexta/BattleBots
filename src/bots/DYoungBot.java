@@ -8,7 +8,13 @@ import arena.BattleBotArena;
 import arena.BotInfo;
 import arena.Bullet;
 
+import weka.core.*;
+import weka.classifiers.*;
+import weka.classifiers.trees.J48;
+
 public class DYoungBot extends Bot {
+
+	private Classifier classifier;
 
 	/**
 	 * Next message to send, or null if nothing to send.
