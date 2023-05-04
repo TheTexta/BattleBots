@@ -8,7 +8,7 @@ import arena.BattleBotArena;
 import arena.BotInfo;
 import arena.Bullet;
 
-public class SampleBot extends Bot {
+public class DYoungBot extends Bot {
 
 	/**
 	 * Next message to send, or null if nothing to send.
@@ -17,7 +17,8 @@ public class SampleBot extends Bot {
 	/**
 	 * An array of trash talk messages.
 	 */
-	private String[] killMessages = {"Woohoo!!!", "In your face!", "Pwned", "Take that.", "Gotcha!", "Too easy.", "Hahahahahahahahahaha :-)"};
+	private String[] killMessages = { "Woohoo!!!", "In your face!", "Pwned", "Take that.", "Gotcha!", "Too easy.",
+			"Hahahahahahahahahaha :-)" };
 	/**
 	 * Bot image
 	 */
@@ -39,41 +40,42 @@ public class SampleBot extends Bot {
 	 */
 	private int msgCounter = 0;
 
-
-	public String[] imageNames()
-	{
-		String[] paths = {"poop.png"}; //***enter your list of image names here. Make sure images are put in images package
+	public String[] imageNames() {
+		String[] paths = { "poop.png" }; // ***enter your list of image names here. Make sure images are put in images
+											// package
 		return paths;
 	}
 
 	/**
 	 * Store the images loaded by the arena
 	 */
-	public void loadedImages(Image[] images)
-	{
+	public void loadedImages(Image[] images) {
 		if (images != null && images.length > 0)
 			image = images[0];
 	}
 
-	public int getMove(BotInfo me, boolean shotOK, BotInfo[] liveBots, BotInfo[] deadBots, Bullet[] bullets)
-	{
-		return BattleBotArena.FIREUP;
+	public int getMove(BotInfo me, boolean shotOK, BotInfo[] liveBots, BotInfo[] deadBots, Bullet[] bullets) {
+		// Integer to store the next move a bot will take.
+		int nextMove;
+
+		nextMove = BattleBotArena.FIREUP;
+
+		return nextMove;
+
 	}
 
-	
 	/**
 	 * 
 	 */
-	public void newRound()
-	{
-		//***not essential - you may do some initializing of your bot before round begins
+	public void newRound() {
+		// ***not essential - you may do some initializing of your bot before round
+		// begins
 	}
 
 	/**
 	 * Send the message and then blank out the message string
 	 */
-	public String outgoingMessage()
-	{
+	public String outgoingMessage() {
 		String msg = nextMessage;
 		nextMessage = null;
 		return msg;
@@ -82,49 +84,45 @@ public class SampleBot extends Bot {
 	/**
 	 * Construct and return my name
 	 */
-	public String getName()
-	{
-		
+	public String getName() {
+
 		return " ";
 	}
 
 	/**
 	 * Team "Arena"
 	 */
-	public String getTeamName()
-	{
+	public String getTeamName() {
 		return "Arena";
 	}
 
 	/**
 	 * Draws the bot at x, y
+	 * 
 	 * @param g The Graphics object to draw on
 	 * @param x Left coord
 	 * @param y Top coord
 	 */
-	public void draw (Graphics g, int x, int y)
-	{
+	public void draw(Graphics g, int x, int y) {
 		if (image != null)
-			g.drawImage(image, x, y, Bot.RADIUS*2, Bot.RADIUS*2, null);
-		else
-		{
+			g.drawImage(image, x, y, Bot.RADIUS * 2, Bot.RADIUS * 2, null);
+		else {
 			g.setColor(Color.lightGray);
-			g.fillOval(x, y, Bot.RADIUS*2, Bot.RADIUS*2);
+			g.fillOval(x, y, Bot.RADIUS * 2, Bot.RADIUS * 2);
 		}
 	}
 
 	/**
 	 * If the message is announcing a kill for me, schedule a trash talk message.
+	 * 
 	 * @param botNum ID of sender
-	 * @param msg Text of incoming message
+	 * @param msg    Text of incoming message
 	 */
-	public void incomingMessage(int botNum, String msg)
-	{
-		if (botNum == BattleBotArena.SYSTEM_MSG && msg.matches(".*destroyed by "+getName()+".*"))
-		{
-			int msgNum = (int)(Math.random()*killMessages.length);
+	public void incomingMessage(int botNum, String msg) {
+		if (botNum == BattleBotArena.SYSTEM_MSG && msg.matches(".*destroyed by " + getName() + ".*")) {
+			int msgNum = (int) (Math.random() * killMessages.length);
 			nextMessage = killMessages[msgNum];
-			msgCounter = (int)(Math.random()*30 + 30);
+			msgCounter = (int) (Math.random() * 30 + 30);
 		}
 	}
 
