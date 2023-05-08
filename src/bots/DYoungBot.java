@@ -134,8 +134,15 @@ public class DYoungBot extends Bot {
 
 	// Get danger level. If above a certain threshold move the bot in a direction.
 	public static int getDanger(BotInfo[] targets, BotInfo me) {
-		
-		return 0;
+		double closestDistance = getDistance(targets[0], me);
+		for (int i = 1; i < targets.length; i++) {
+			if (getDistance(targets[i], me) < closestDistance)
+				closestDistance = getDistance(targets[i], me);
+		}
+		if (closestDistance < 10)
+			return 1;
+		else
+			return 0;
 	}
 
 	// Returns pixel distance to an object
