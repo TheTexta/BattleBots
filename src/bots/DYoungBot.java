@@ -92,14 +92,14 @@ public class DYoungBot extends Bot {
 	 */
 	public String getName() {
 
-		return " ";
+		return "Dexter";
 	}
 
 	/**
 	 * Team "Arena"
 	 */
 	public String getTeamName() {
-		return "Arena";
+		return "DextersDestroyers";
 	}
 
 	/**
@@ -130,6 +130,19 @@ public class DYoungBot extends Bot {
 			nextMessage = killMessages[msgNum];
 			msgCounter = (int) (Math.random() * 30 + 30);
 		}
+	}
+
+	// Get danger level. If above a certain threshold move the bot in a direction.
+	public static int getDanger(BotInfo[] targets, BotInfo me) {
+		
+		return 0;
+	}
+
+	// Returns pixel distance to an object
+	public static double getDistance(BotInfo target, BotInfo me) {
+		double distance = Math.sqrt(Math.pow((Math.abs(me.getX() - target.getX())), 2)
+				+ Math.pow((Math.abs(me.getY() - target.getY())), 2));
+		return distance;
 	}
 
 }
