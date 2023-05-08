@@ -592,7 +592,7 @@ public class BattleBotArena extends JPanel implements MouseListener, MouseWheelL
 		// *** INSERT PLAYER BOTS HERE. Use any array numbers you like
 		// *** as the bots will be shuffled again later.
 		// *** Any empty spots will be filled with standard arena bots.
-		//bots[0] = new CTomFTW();  // Chris
+		bots[0] = new DYoungBot();  // Chris
 		//bots[1] = new Falcon();   // David
 		//bots[2] = new GotPho(); // Matthew
 		//bots[3] = new Harmless(); // Zong

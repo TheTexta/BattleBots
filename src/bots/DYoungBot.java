@@ -66,6 +66,10 @@ public class DYoungBot extends Bot {
 
 		nextMove = BattleBotArena.FIREUP;
 
+		if (getDanger(liveBots, me) == 1) {
+			nextMove = BattleBotArena.DOWN;
+		}
+
 		return nextMove;
 
 	}
