@@ -285,6 +285,7 @@ public class BattleBotArena extends JPanel implements MouseListener, MouseWheelL
 	 * Total number of Bots in round 1 (if you have fewer than this, the rest of the spots
 	 * in the array will be filled with Drones, RandBots, and Sentries).
 	 */
+	// TODO change back to 16
 	public static final int 	NUM_BOTS = 16;
 	/**
 	 * Number of bullets on screen at once for each bot
@@ -413,11 +414,12 @@ public class BattleBotArena extends JPanel implements MouseListener, MouseWheelL
 	/**
 	 * Toggles sound effects on and off
 	 */
-	private boolean soundOn = true;
+	private boolean soundOn = false;
 	/**
 	 * The current speed multiplier
 	 */
-	private int speed = 1;
+	// TODO change this back
+	private int speed = 10;
 	/**
 	 * Controls the flashing if the game is paused
 	 */
@@ -593,7 +595,7 @@ public class BattleBotArena extends JPanel implements MouseListener, MouseWheelL
 		// *** as the bots will be shuffled again later.
 		// *** Any empty spots will be filled with standard arena bots.
 		bots[0] = new DYoungBot();  // Chris
-		//bots[1] = new Falcon();   // David
+		bots[1] = new Drone();   // David
 		//bots[2] = new GotPho(); // Matthew
 		//bots[3] = new Harmless(); // Zong
 		//bots[4] = new MetaBee();  // Owen

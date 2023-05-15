@@ -3,18 +3,53 @@ package bots;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import arena.BattleBotArena;
 import arena.BotInfo;
 import arena.Bullet;
 
-import weka.core.*;
-import weka.classifiers.*;
-import weka.classifiers.trees.J48;
+/*
+ * Possible Moves
+ * public static final int UP = 1;
+	/**
+	 * For bot to request a move down
+	 *
+	public static final int DOWN = 2;
+	/**
+	 * For bot to request a move left
+	 *
+	public static final int LEFT = 3;
+	/**
+	 * For bot to request a move right
+	 *
+	public static final int RIGHT = 4;
+	/**
+	 * For bot to request a bullet fired up
+	 *
+	public static final int FIREUP = 5;
+	/**
+	 * For bot to request a bullet fired down
+	 *
+	public static final int FIREDOWN = 6;
+	/**
+	 * For bot to request a bullet fired left
+	 *
+	public static final int FIRELEFT = 7;
+	/**
+	 * For bot to request a bullet fired right
+	 *
+	public static final int FIRERIGHT = 8;
+	/**
+	 * For bot to request a null move
+	 *
+	public static final int STAY = 9;
+ */
 
 public class DYoungBot extends Bot {
-
-	private Classifier classifier;
+	private int[] moves = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 	/**
 	 * Next message to send, or null if nothing to send.
@@ -64,12 +99,31 @@ public class DYoungBot extends Bot {
 		// Integer to store the next move a bot will take.
 		int nextMove;
 
-		nextMove = BattleBotArena.FIREUP;
+		nextMove = BattleBotArena.STAY;
 
-		if (getDanger(liveBots, me) == 1) {
-			nextMove = BattleBotArena.DOWN;
+		int danger = getDanger(deadBots, bullets, me);
+		if (danger == 3) {
+			Bullet closeBullet = findClosestBullet(bullets, me);
+			if (me.getY() == closeBullet.getY()) {
+				nextMove = BattleBotArena.UP;
+			} else {
+				nextMove = BattleBotArena.RIGHT;
+			}
 		}
+		if (danger != 0)
+			System.out.println(danger);
+		nextMessage = Integer.toString(danger);
 
+		/*
+		 * Double[][] closest5 = closest5bullets(bullets, me);
+		 * System.out.println("----------------------------");
+		 * for (Double[] bullet : closest5) {
+		 * System.out.println("X:" + bullet[0] + " Y:" + bullet[1] + " Distance:" +
+		 * bullet[2]);
+		 * 
+		 * }
+		 * System.out.println("----------------------------");
+		 */
 		return nextMove;
 
 	}
@@ -96,7 +150,7 @@ public class DYoungBot extends Bot {
 	 */
 	public String getName() {
 
-		return "Dexter";
+		return "DexBot";
 	}
 
 	/**
@@ -137,16 +191,41 @@ public class DYoungBot extends Bot {
 	}
 
 	// Get danger level. If above a certain threshold move the bot in a direction.
-	public static int getDanger(BotInfo[] targets, BotInfo me) {
-		double closestDistance = getDistance(targets[0], me);
+	public static int getDanger(BotInfo[] targets, Bullet[] bullets, BotInfo me) {
+		BotInfo target = targets[0];
 		for (int i = 1; i < targets.length; i++) {
-			if (getDistance(targets[i], me) < closestDistance)
-				closestDistance = getDistance(targets[i], me);
+			if (getDistance(targets[i], me) < getDistance(targets[i], me)) {
+				target = targets[i];
+			}
+
 		}
-		if (closestDistance < 10)
+		Bullet closeBullet = findClosestBullet(bullets, me);
+		if (sameAxis(closeBullet, me) && getDistance(closeBullet, me) < RADIUS)
+			return 3;
+		double[] targetInfo = botInfo(target, me);
+		if (targetInfo[0] < 10 && sameAxis(target, me)) {
+			return 2;
+		}
+		if (targetInfo[0] < 10) {
 			return 1;
-		else
-			return 0;
+		}
+		return 0;
+	}
+
+	// Find closest bullet from an array
+	public static Bullet findClosestBullet(Bullet[] bullets, BotInfo me) {
+		Bullet closeBullet = bullets[0];
+		for (Bullet bullet : bullets) {
+			if (getDistance(closeBullet, me) > getDistance(bullet, me))
+				closeBullet = bullet;
+		}
+		System.out.println("X:" + closeBullet.getX() + " Y:" + closeBullet.getY() + " Distance:" + getDistance(closeBullet, me));
+		return closeBullet;
+	}
+
+	// Important info of a bot
+	public static double[] botInfo(BotInfo target, BotInfo me) {
+		return new double[] { getDistance(target, me), target.getX(), target.getY() };
 	}
 
 	// Returns pixel distance to an object
@@ -154,6 +233,50 @@ public class DYoungBot extends Bot {
 		double distance = Math.sqrt(Math.pow((Math.abs(me.getX() - target.getX())), 2)
 				+ Math.pow((Math.abs(me.getY() - target.getY())), 2));
 		return distance;
+	}
+
+	// Returns pixel distance to an object
+	public static double getDistance(Bullet target, BotInfo me) {
+		double distance = Math.sqrt(Math.pow((Math.abs(me.getX() - target.getX())), 2)
+				+ Math.pow((Math.abs(me.getY() - target.getY())), 2));
+		return distance;
+	}
+
+	public static Double[][] closest5bullets(Bullet[] bullets, BotInfo me) {
+		ArrayList<Double[]> positions = new ArrayList<>();
+		for (int i = 0; i < bullets.length; i++) {
+			Double[] temp = { bullets[i].getX(), bullets[i].getY(), getDistance(bullets[i], me) };
+			positions.add(temp);
+		}
+		positions.sort(new ColumnComparator(2));
+		Double[][] result = { positions.get(0), positions.get(1), positions.get(2), positions.get(3),
+				positions.get(4) };
+		return result;
+	}
+
+	// Custom comparator to compare arrays based on the specified column
+	static class ColumnComparator implements Comparator<Double[]> {
+		private final int columnIndex;
+
+		public ColumnComparator(int columnIndex) {
+			this.columnIndex = columnIndex;
+		}
+
+		@Override
+		public int compare(Double[] array1, Double[] array2) {
+			// Compare the values in the specified column
+			return Double.compare(array1[columnIndex], array2[columnIndex]);
+		}
+	}
+
+	// Check if bot is on same axis as player
+	public static boolean sameAxis(BotInfo target, BotInfo me) {
+		return (Math.abs(target.getX() - me.getX()) <= RADIUS || Math.abs(target.getY() - me.getY()) <= RADIUS);
+	}
+
+	// Check if bullet is on same axis as player
+	public static boolean sameAxis(Bullet target, BotInfo me) {
+		return (Math.abs(target.getX() - me.getX()) <= RADIUS || Math.abs(target.getY() - me.getY()) <= RADIUS);
 	}
 
 }
