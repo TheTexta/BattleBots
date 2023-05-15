@@ -104,15 +104,31 @@ public class DYoungBot extends Bot {
 		int danger = getDanger(deadBots, bullets, me);
 		if (danger == 3) {
 			Bullet closeBullet = findClosestBullet(bullets, me);
-			if (me.getY() == closeBullet.getY()) {
-				nextMove = BattleBotArena.UP;
+			// TODO implement a system if the bot is touching a wall.
+			// If i am on the same y axis as the bullet
+			if (Math.abs(me.getY() - closeBullet.getY()) <= RADIUS) {
+				// If i am higher then the bullet go up
+				if (me.getY() > closeBullet.getY()) {
+					nextMove = BattleBotArena.UP;
+					System.out.println("UP");
+				}
+				// If i am lower then the bullet go down
+				else {
+					nextMove = BattleBotArena.DOWN;
+					System.out.println("DOWN");
+				}
 			} else {
-				nextMove = BattleBotArena.RIGHT;
+				// If i am furthe to the right of the bullet go right
+				if (me.getX() > closeBullet.getX()){
+					nextMove = BattleBotArena.RIGHT;
+					System.out.println("RIGHT");
+				// If i am further to the left of the bullet or in the center go left
+				}else{
+					nextMove = BattleBotArena.LEFT;
+					System.out.println("LEFT");
+				}
 			}
 		}
-		if (danger != 0)
-			System.out.println(danger);
-		nextMessage = Integer.toString(danger);
 
 		/*
 		 * Double[][] closest5 = closest5bullets(bullets, me);
@@ -200,7 +216,8 @@ public class DYoungBot extends Bot {
 
 		}
 		Bullet closeBullet = findClosestBullet(bullets, me);
-		if (sameAxis(closeBullet, me) && getDistance(closeBullet, me) < RADIUS)
+		// TODO change the +5
+		if (sameAxis(closeBullet, me) && getDistance(closeBullet, me) < RADIUS + 10)
 			return 3;
 		double[] targetInfo = botInfo(target, me);
 		if (targetInfo[0] < 10 && sameAxis(target, me)) {
@@ -219,7 +236,11 @@ public class DYoungBot extends Bot {
 			if (getDistance(closeBullet, me) > getDistance(bullet, me))
 				closeBullet = bullet;
 		}
-		System.out.println("X:" + closeBullet.getX() + " Y:" + closeBullet.getY() + " Distance:" + getDistance(closeBullet, me));
+		System.out.println(
+				"X:" + closeBullet.getX() + " Y:" + closeBullet.getY() + " Distance:" + getDistance(closeBullet, me));
+		System.out.println(
+			"ME: X:" + me.getX() + " Y:" + me.getY()
+		);
 		return closeBullet;
 	}
 

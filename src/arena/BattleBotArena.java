@@ -419,7 +419,7 @@ public class BattleBotArena extends JPanel implements MouseListener, MouseWheelL
 	 * The current speed multiplier
 	 */
 	// TODO change this back
-	private int speed = 10;
+	private int speed = 1;
 	/**
 	 * Controls the flashing if the game is paused
 	 */
