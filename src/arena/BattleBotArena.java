@@ -286,7 +286,7 @@ public class BattleBotArena extends JPanel implements MouseListener, MouseWheelL
 	 * in the array will be filled with Drones, RandBots, and Sentries).
 	 */
 	// TODO change back to 16
-	public static final int 	NUM_BOTS = 16;
+	public static final int 	NUM_BOTS = 5;
 	/**
 	 * Number of bullets on screen at once for each bot
 	 */
@@ -594,8 +594,8 @@ public class BattleBotArena extends JPanel implements MouseListener, MouseWheelL
 		// *** INSERT PLAYER BOTS HERE. Use any array numbers you like
 		// *** as the bots will be shuffled again later.
 		// *** Any empty spots will be filled with standard arena bots.
-		bots[0] = new DYoungBot();  // Chris
-		bots[1] = new Drone();   // David
+		//bots[0] = new DYoungBot();  // Chris
+		bots[1] = new DYoungBot();   // David
 		//bots[2] = new GotPho(); // Matthew
 		//bots[3] = new Harmless(); // Zong
 		//bots[4] = new MetaBee();  // Owen

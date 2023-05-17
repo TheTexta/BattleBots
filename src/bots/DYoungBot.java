@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 import arena.BattleBotArena;
@@ -48,7 +47,12 @@ import arena.Bullet;
 	public static final int STAY = 9;
  */
 
+
+
 public class DYoungBot extends Bot {
+	public static double offsetX = 0;
+	public static double offsetY=0;
+
 	private int[] moves = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 	/**
@@ -101,14 +105,16 @@ public class DYoungBot extends Bot {
 
 		nextMove = BattleBotArena.STAY;
 
+		offsetXY(me);
+
 		int danger = getDanger(deadBots, bullets, me);
 		if (danger == 3) {
 			Bullet closeBullet = findClosestBullet(bullets, me);
 			// TODO implement a system if the bot is touching a wall.
 			// If i am on the same y axis as the bullet
-			if (Math.abs(me.getY() - closeBullet.getY()) <= RADIUS) {
+			if (Math.abs(offsetY - closeBullet.getY()) <= RADIUS) {
 				// If i am higher then the bullet go up
-				if (me.getY() > closeBullet.getY()) {
+				if (offsetY > closeBullet.getY()) {
 					nextMove = BattleBotArena.UP;
 					System.out.println("UP");
 				}
@@ -119,7 +125,7 @@ public class DYoungBot extends Bot {
 				}
 			} else {
 				// If i am furthe to the right of the bullet go right
-				if (me.getX() > closeBullet.getX()){
+				if (offsetX > closeBullet.getX()){
 					nextMove = BattleBotArena.RIGHT;
 					System.out.println("RIGHT");
 				// If i am further to the left of the bullet or in the center go left
@@ -239,7 +245,7 @@ public class DYoungBot extends Bot {
 		System.out.println(
 				"X:" + closeBullet.getX() + " Y:" + closeBullet.getY() + " Distance:" + getDistance(closeBullet, me));
 		System.out.println(
-			"ME: X:" + me.getX() + " Y:" + me.getY()
+			"ME: X:" + offsetX + " Y:" + offsetY
 		);
 		return closeBullet;
 	}
@@ -251,15 +257,15 @@ public class DYoungBot extends Bot {
 
 	// Returns pixel distance to an object
 	public static double getDistance(BotInfo target, BotInfo me) {
-		double distance = Math.sqrt(Math.pow((Math.abs(me.getX() - target.getX())), 2)
-				+ Math.pow((Math.abs(me.getY() - target.getY())), 2));
+		double distance = Math.sqrt(Math.pow((Math.abs(offsetX - target.getX())), 2)
+				+ Math.pow((Math.abs(offsetY - target.getY())), 2));
 		return distance;
 	}
 
 	// Returns pixel distance to an object
 	public static double getDistance(Bullet target, BotInfo me) {
-		double distance = Math.sqrt(Math.pow((Math.abs(me.getX() - target.getX())), 2)
-				+ Math.pow((Math.abs(me.getY() - target.getY())), 2));
+		double distance = Math.sqrt(Math.pow((Math.abs(offsetX - target.getX())), 2)
+				+ Math.pow((Math.abs(offsetY - target.getY())), 2));
 		return distance;
 	}
 
@@ -292,12 +298,27 @@ public class DYoungBot extends Bot {
 
 	// Check if bot is on same axis as player
 	public static boolean sameAxis(BotInfo target, BotInfo me) {
-		return (Math.abs(target.getX() - me.getX()) <= RADIUS || Math.abs(target.getY() - me.getY()) <= RADIUS);
+		return (Math.abs(target.getX() - offsetX) <= RADIUS || Math.abs(target.getY() - offsetY) <= RADIUS);
 	}
 
 	// Check if bullet is on same axis as player
 	public static boolean sameAxis(Bullet target, BotInfo me) {
-		return (Math.abs(target.getX() - me.getX()) <= RADIUS || Math.abs(target.getY() - me.getY()) <= RADIUS);
+		return (Math.abs(target.getX() - offsetX) <= RADIUS || Math.abs(target.getY() - offsetY) <= RADIUS);
+	}
+
+	// Set offsetxy for me
+	public static void offsetXY(BotInfo me){
+		offsetX = me.getX()+5;
+		offsetY = me.getY()+5;
+	}
+
+	public static int[][] genMatrix (BotInfo me, Bullet[] bullets, BotInfo[] targets, BotInfo[] deadTargets){
+		int[][] matrix = new int[700][500];
+		for (Bullet bullet:bullets){
+			matrix[(int)bullet.getX()][(int)bullet.getY()] = 5;
+		}
+		
+		return matrix;
 	}
 
 }
