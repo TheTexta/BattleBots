@@ -107,12 +107,32 @@ public class DYoungBot extends Bot {
 
 		int[][] matrix = genMatrix(me, bullets, liveBots, deadBots);
 
+		// check for incoming bullet trajectories
+		int[] dangerPos = checkGrid(matrix, me.getX() - 1, me.getY() - 1, me.getX() + 1 + 2 * RADIUS,
+				me.getY() + 1 + 2 * RADIUS);
+		if (dangerPos != null) {
+			// check the left
+			if (dangerPos[0] < me.getX()) {
+				nextMove = BattleBotArena.UP;
+			}
+			if (dangerPos[0] > (me.getX() + RADIUS * 2)) {
+				nextMove = BattleBotArena.UP;
+			}
+			if (dangerPos[1]<me.getY()){
+				nextMove = BattleBotArena.RIGHT;
+			}
+			if(dangerPos[1]>me.getY()){
+				nextMove = BattleBotArena.RIGHT;
+			}
+
+		}
+
 		// Update the matrix in the MatrixPanel
 		panel.setMatrix(matrix);
 		panel.repaint();
 		System.out.print("Print!");
 
-		return chooseNextMove(matrix, me);
+		return nextMove;
 
 	}
 
@@ -244,53 +264,19 @@ public class DYoungBot extends Bot {
 		return matrix;
 	}
 
-	public static void moveBot(int[][] matrix, int botX, int botY) {
-		final int RADIUS = 20;
-		final double BOT_SPEED = 1.5;
-		final int BULLET_SPEED = 4;
-
-		// Check if there are any bullets within the hit radius
-		for (int i = -RADIUS; i <= RADIUS; i++) {
-			for (int j = -RADIUS; j <= RADIUS; j++) {
-				int checkX = botX + i;
-				int checkY = botY + j;
-
-				if (checkX >= 0 && checkX < 700 && checkY >= 0 && checkY < 500) {
-					if (matrix[checkX][checkY] == 2) {
-						// Bullet found, calculate the direction to move
-						double distance = Math.sqrt(i * i + j * j);
-						double moveX = (i / distance) * BOT_SPEED;
-						double moveY = (j / distance) * BOT_SPEED;
-
-						// Try to move the bot horizontally
-						if (Math.abs(moveX) >= 1.0) {
-							int moveSteps = (int) Math.round(moveX);
-							int newX = botX + moveSteps;
-							if (newX >= 0 && newX < 700) {
-								if (matrix[newX][botY] == 0) {
-									matrix[botX][botY] = 0; // Clear the current bot position
-									botX = newX;
-									matrix[botX][botY] = 1; // Mark the new bot position
-								}
-							}
-						}
-
-						// Try to move the bot vertically
-						if (Math.abs(moveY) >= 1.0) {
-							int moveSteps = (int) Math.round(moveY);
-							int newY = botY + moveSteps;
-							if (newY >= 0 && newY < 500) {
-								if (matrix[botX][newY] == 0) {
-									matrix[botX][botY] = 0; // Clear the current bot position
-									botY = newY;
-									matrix[botX][botY] = 1; // Mark the new bot position
-								}
-							}
-						}
-					}
+	public int[] checkGrid(int[][] matrix, int startX, int startY, int endX, int endY) {
+		for (int x = 0; x < (endX - startX); x++) {
+			for (int y = 0; y < (endY - startY); y++) {
+				if (matrix[x + startX][y + startY] == 2) {
+					return new int[] { x + startX, y + startY };
 				}
 			}
 		}
+		return null;
+	}
+
+	public int[] checkGrid(int[][] matrix, double startX, double startY, double endX, double endY) {
+		return checkGrid(matrix, (int) startX, (int) startY, (int) endX, (int) endY);
 	}
 
 }
