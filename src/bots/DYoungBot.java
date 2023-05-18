@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 
 import arena.BattleBotArena;
@@ -134,7 +135,9 @@ public class DYoungBot extends Bot {
 			}
 		}
 
-		printSubset(genMatrix(me, bullets, liveBots, deadBots), me);
+
+
+		printSubset(genMatrix(me, bullets, liveBots, deadBots), me, 5);
 
 		/*
 		 * Double[][] closest5 = closest5bullets(bullets, me);
@@ -313,65 +316,88 @@ public class DYoungBot extends Bot {
 
 	public static int[][] genMatrix(BotInfo me, Bullet[] bullets, BotInfo[] targets, BotInfo[] deadTargets) {
 		int[][] matrix = new int[700][500];
-
+	
 		// ...
-
-		for (Bullet bullet : bullets) {
+	
+		Arrays.stream(bullets).parallel().forEach(bullet -> {
 			int bulletX = (int) bullet.getX();
 			int bulletY = (int) bullet.getY();
-
+	
 			if (bulletX >= 0 && bulletX < 700 && bulletY >= 0 && bulletY < 500) {
 				matrix[bulletX][bulletY] = 5;
-
-				int bulletXSpeed = (int)bullet.getXSpeed();
-				int bulletYSpeed = (int)bullet.getYSpeed();
-
-				for (int i = 1; i <= 16; i++) {
-					if (bulletXSpeed > 0 && bulletX + i < 700) {
+	
+				int bulletXSpeed = (int) bullet.getXSpeed();
+				int bulletYSpeed = (int) bullet.getYSpeed();
+	
+				if (bulletXSpeed > 0) {
+					for (int i = 1; i <= 16 && bulletX + i < 700; i++) {
 						matrix[bulletX + i][bulletY] = 2;
 					}
-					if (bulletXSpeed < 0 && bulletX - i >= 0) {
+				}
+				if (bulletXSpeed < 0) {
+					for (int i = 1; i <= 16 && bulletX - i >= 0; i++) {
 						matrix[bulletX - i][bulletY] = 2;
 					}
-					if (bulletYSpeed > 0 && bulletY + i < 500) {
+				}
+				if (bulletYSpeed > 0) {
+					for (int i = 1; i <= 16 && bulletY + i < 500; i++) {
 						matrix[bulletX][bulletY + i] = 2;
 					}
-					if (bulletYSpeed < 0 && bulletY - i >= 0) {
+				}
+				if (bulletYSpeed < 0) {
+					for (int i = 1; i <= 16 && bulletY - i >= 0; i++) {
 						matrix[bulletX][bulletY - i] = 2;
 					}
 				}
 			}
-		}
-
+		});
+	
 		// ...
-
-		for (BotInfo target : targets) {
-			matrix[(int) target.getX()][(int) target.getY()] = 4;
-		}
-
-		for (BotInfo target : deadTargets) {
-			matrix[(int) target.getX()][(int) target.getY()] = 3;
-		}
-
+	
+		Arrays.stream(targets).parallel().forEach(target -> {
+			// Calc casting only once.
+			int targetX = (int) target.getX();
+			int targetY = (int) target.getY();
+			for (int i=0;i<20;i++){
+				for (int r=0;r<20;r++){
+					matrix[targetX+i][targetY+r] = 4;
+				}
+			}
+		});
+	
+		Arrays.stream(deadTargets).parallel().forEach(dTarget -> {
+			matrix[(int) dTarget.getX()][(int) dTarget.getY()] = 3;
+		});
+	
 		return matrix;
 	}
+	
 
-	public static void printSubset(int[][] matrix, BotInfo me) {
+	public static void printSubset(int[][] matrix, BotInfo me, int radius) {
 		int centerX = (int) me.getX();
 		int centerY = (int) me.getY();
-		
-		int startX = Math.max(centerX - 15, 0);
-		int endX = Math.min(centerX + 15, matrix.length - 1);
-		
-		int startY = Math.max(centerY - 15, 0);
-		int endY = Math.min(centerY + 15, matrix[0].length - 1);
-		
+	
+		int startX = Math.max(centerX - radius, 0);
+		int endX = Math.min(centerX + radius, matrix.length - 1);
+	
+		int startY = Math.max(centerY - radius, 0);
+		int endY = Math.min(centerY + radius, matrix[0].length - 1);
+	
+		StringBuilder sb = new StringBuilder();
+	
 		for (int i = startX; i <= endX; i++) {
 			for (int j = startY; j <= endY; j++) {
-				System.out.print(matrix[i][j] + " ");
+				if (i >= centerX && i < centerX + 2 && j >= centerY && j < centerY + 2) {
+					sb.append("[B] ");  // B represents the bot
+				} else {
+					sb.append(matrix[i][j]).append(" ");
+				}
 			}
-			System.out.println();
+			sb.append("\n");
 		}
+	
+		System.out.print(sb.toString());
 	}
+	
 
 }

@@ -10,6 +10,7 @@ import arena.BattleBotArena;
 import arena.BotInfo;
 import arena.Bullet;
 
+
 /**
  * The HumanBot is a Bot that is under human control and should only be used for test purposes (e.g.
  * have a match with only two Bots - the one you are developing and this one - then move and fire
