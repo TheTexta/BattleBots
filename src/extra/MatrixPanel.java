@@ -3,6 +3,7 @@ package extra;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -22,20 +23,31 @@ public class MatrixPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        int cellWidth = getWidth() / matrix.length;
-        int cellHeight = getHeight() / matrix[0].length;
-
-        for (int row = 0; row < matrix.length; row++) {
-            for (int col = 0; col < matrix[row].length; col++) {
-                int value = matrix[row][col];
-                Color color = getColorForValue(value);
-
+        int matrixLength = matrix.length;
+        int matrixRowLength = matrix[0].length;
+        int componentWidth = getWidth();
+        int componentHeight = getHeight();
+        int cellWidth = componentWidth / matrixLength;
+        int cellHeight = componentHeight / matrixRowLength;
+    
+        // Precompute color lookup table
+        Color[][] colorTable = new Color[matrixLength][matrixRowLength];
+        for (int row = 0; row < matrixLength; row++) {
+            for (int col = 0; col < matrixRowLength; col++) {
+                colorTable[row][col] = getColorForValue(matrix[row][col]);
+            }
+        }
+    
+        for (int row = 0; row < matrixLength; row++) {
+            for (int col = 0; col < matrixRowLength; col++) {
+                Color color = colorTable[row][col];
                 g.setColor(color);
                 g.fillRect(row * cellWidth, col * cellHeight, cellWidth, cellHeight);
             }
         }
     }
-
+    
+    
     private Color getColorForValue(int value) {
         // Define your own logic for mapping matrix values to colors
         // Here's a simple example that maps positive values to blue and negative values

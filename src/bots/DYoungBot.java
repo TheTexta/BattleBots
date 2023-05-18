@@ -111,26 +111,40 @@ public class DYoungBot extends Bot {
 		int[] dangerPos = checkGrid(matrix, me.getX() - 1, me.getY() - 1, me.getX() + 1 + 2 * RADIUS,
 				me.getY() + 1 + 2 * RADIUS);
 		if (dangerPos != null) {
-			// check the left
+			// If the bullet is to the left of me
 			if (dangerPos[0] < me.getX()) {
-				nextMove = BattleBotArena.UP;
+				if (dangerPos[1] > me.getY() - RADIUS) {
+					nextMove = BattleBotArena.UP;
+				} else {
+					nextMove = BattleBotArena.DOWN;
+				}
+			} // If the bullet is to the right of me
+			else if (dangerPos[0] > (me.getX() + RADIUS * 2)) {
+				if (dangerPos[1] > me.getY() - RADIUS) {
+					nextMove = BattleBotArena.UP;
+				} else {
+					nextMove = BattleBotArena.DOWN;
+				}
+			} // If the bullet is above me
+			else if (dangerPos[1] < me.getY()) {
+				if (dangerPos[0] > me.getX() + RADIUS) {
+					nextMove = BattleBotArena.LEFT;
+				} else {
+					nextMove = BattleBotArena.RIGHT;
+				}
+			} // If the bullet is below me
+			else if (dangerPos[1] > (me.getY() + RADIUS * 2)) {
+				if (dangerPos[0] > me.getX() + RADIUS) {
+					nextMove = BattleBotArena.LEFT;
+				} else {
+					nextMove = BattleBotArena.RIGHT;
+				}
 			}
-			if (dangerPos[0] > (me.getX() + RADIUS * 2)) {
-				nextMove = BattleBotArena.UP;
-			}
-			if (dangerPos[1]<me.getY()){
-				nextMove = BattleBotArena.RIGHT;
-			}
-			if(dangerPos[1]>me.getY()){
-				nextMove = BattleBotArena.RIGHT;
-			}
-
 		}
 
 		// Update the matrix in the MatrixPanel
 		panel.setMatrix(matrix);
 		panel.repaint();
-		System.out.print("Print!");
 
 		return nextMove;
 
@@ -218,7 +232,8 @@ public class DYoungBot extends Bot {
 				int bulletYSpeed = (int) bullet.getYSpeed();
 
 				// Handle bullet speed in different directions
-				for (int i = 1; i <= 16; i++) {
+				// TODO calc exact trajectory distance. currently 28
+				for (int i = 1; i <= 28; i++) {
 					if (bulletXSpeed > 0 && bulletX + i < 700) {
 						matrix[bulletX + i][bulletY] = 2; // Bullet moving right
 					}
