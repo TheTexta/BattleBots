@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import javax.swing.JFrame;
+
 import arena.BattleBotArena;
 import arena.BotInfo;
 import arena.Bullet;
+import extra.MatrixPanel;
 
 /*
  * Possible Moves
@@ -49,10 +52,8 @@ import arena.Bullet;
  */
 
 public class DYoungBot extends Bot {
-	public static double offsetX = 0;
-	public static double offsetY = 0;
-
-	private int[] moves = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	MatrixPanel panel = new MatrixPanel(new int[700][500]);
+	public static boolean start = false;
 
 	/**
 	 * Next message to send, or null if nothing to send.
@@ -104,52 +105,14 @@ public class DYoungBot extends Bot {
 
 		nextMove = BattleBotArena.STAY;
 
-		offsetXY(me);
+		int[][] matrix = genMatrix(me, bullets, liveBots, deadBots);
 
-		int danger = getDanger(deadBots, bullets, me);
-		if (danger == 3) {
-			Bullet closeBullet = findClosestBullet(bullets, me);
-			// TODO implement a system if the bot is touching a wall.
-			// If i am on the same y axis as the bullet
-			if (Math.abs(offsetY - closeBullet.getY()) <= RADIUS) {
-				// If i am higher then the bullet go up
-				if (offsetY > closeBullet.getY()) {
-					nextMove = BattleBotArena.UP;
-					System.out.println("UP");
-				}
-				// If i am lower then the bullet go down
-				else {
-					nextMove = BattleBotArena.DOWN;
-					System.out.println("DOWN");
-				}
-			} else {
-				// If i am furthe to the right of the bullet go right
-				if (offsetX > closeBullet.getX()) {
-					nextMove = BattleBotArena.RIGHT;
-					System.out.println("RIGHT");
-					// If i am further to the left of the bullet or in the center go left
-				} else {
-					nextMove = BattleBotArena.LEFT;
-					System.out.println("LEFT");
-				}
-			}
-		}
+		// Update the matrix in the MatrixPanel
+		panel.setMatrix(matrix);
+		panel.repaint();
+		System.out.print("Print!");
 
-
-
-		printSubset(genMatrix(me, bullets, liveBots, deadBots), me, 5);
-
-		/*
-		 * Double[][] closest5 = closest5bullets(bullets, me);
-		 * System.out.println("----------------------------");
-		 * for (Double[] bullet : closest5) {
-		 * System.out.println("X:" + bullet[0] + " Y:" + bullet[1] + " Distance:" +
-		 * bullet[2]);
-		 * 
-		 * }
-		 * System.out.println("----------------------------");
-		 */
-		return nextMove;
+		return chooseNextMove(matrix, me);
 
 	}
 
@@ -159,6 +122,11 @@ public class DYoungBot extends Bot {
 	public void newRound() {
 		// ***not essential - you may do some initializing of your bot before round
 		// begins
+		if (!start) {
+			panel.createAndShowGUI();
+			start = true;
+		}
+
 	}
 
 	/**
@@ -215,189 +183,114 @@ public class DYoungBot extends Bot {
 		}
 	}
 
-	// Get danger level. If above a certain threshold move the bot in a direction.
-	public static int getDanger(BotInfo[] targets, Bullet[] bullets, BotInfo me) {
-		BotInfo target = targets[0];
-		for (int i = 1; i < targets.length; i++) {
-			if (getDistance(targets[i], me) < getDistance(targets[i], me)) {
-				target = targets[i];
-			}
-
-		}
-		Bullet closeBullet = findClosestBullet(bullets, me);
-		// TODO change the +5
-		if (sameAxis(closeBullet, me) && getDistance(closeBullet, me) < RADIUS + 10)
-			return 3;
-		double[] targetInfo = botInfo(target, me);
-		if (targetInfo[0] < 10 && sameAxis(target, me)) {
-			return 2;
-		}
-		if (targetInfo[0] < 10) {
-			return 1;
-		}
-		return 0;
-	}
-
-	// Find closest bullet from an array
-	public static Bullet findClosestBullet(Bullet[] bullets, BotInfo me) {
-		Bullet closeBullet = bullets[0];
-		for (Bullet bullet : bullets) {
-			if (getDistance(closeBullet, me) > getDistance(bullet, me))
-				closeBullet = bullet;
-		}
-		System.out.println(
-				"X:" + closeBullet.getX() + " Y:" + closeBullet.getY() + " Distance:" + getDistance(closeBullet, me));
-		System.out.println(
-				"ME: X:" + offsetX + " Y:" + offsetY);
-		return closeBullet;
-	}
-
-	// Important info of a bot
-	public static double[] botInfo(BotInfo target, BotInfo me) {
-		return new double[] { getDistance(target, me), target.getX(), target.getY() };
-	}
-
-	// Returns pixel distance to an object
-	public static double getDistance(BotInfo target, BotInfo me) {
-		double distance = Math.sqrt(Math.pow((Math.abs(offsetX - target.getX())), 2)
-				+ Math.pow((Math.abs(offsetY - target.getY())), 2));
-		return distance;
-	}
-
-	// Returns pixel distance to an object
-	public static double getDistance(Bullet target, BotInfo me) {
-		double distance = Math.sqrt(Math.pow((Math.abs(offsetX - target.getX())), 2)
-				+ Math.pow((Math.abs(offsetY - target.getY())), 2));
-		return distance;
-	}
-
-	public static Double[][] closest5bullets(Bullet[] bullets, BotInfo me) {
-		ArrayList<Double[]> positions = new ArrayList<>();
-		for (int i = 0; i < bullets.length; i++) {
-			Double[] temp = { bullets[i].getX(), bullets[i].getY(), getDistance(bullets[i], me) };
-			positions.add(temp);
-		}
-		positions.sort(new ColumnComparator(2));
-		Double[][] result = { positions.get(0), positions.get(1), positions.get(2), positions.get(3),
-				positions.get(4) };
-		return result;
-	}
-
-	// Custom comparator to compare arrays based on the specified column
-	static class ColumnComparator implements Comparator<Double[]> {
-		private final int columnIndex;
-
-		public ColumnComparator(int columnIndex) {
-			this.columnIndex = columnIndex;
-		}
-
-		@Override
-		public int compare(Double[] array1, Double[] array2) {
-			// Compare the values in the specified column
-			return Double.compare(array1[columnIndex], array2[columnIndex]);
-		}
-	}
-
-	// Check if bot is on same axis as player
-	public static boolean sameAxis(BotInfo target, BotInfo me) {
-		return (Math.abs(target.getX() - offsetX) <= RADIUS || Math.abs(target.getY() - offsetY) <= RADIUS);
-	}
-
-	// Check if bullet is on same axis as player
-	public static boolean sameAxis(Bullet target, BotInfo me) {
-		return (Math.abs(target.getX() - offsetX) <= RADIUS || Math.abs(target.getY() - offsetY) <= RADIUS);
-	}
-
-	// Set offsetxy for me
-	public static void offsetXY(BotInfo me) {
-		offsetX = me.getX() + 5;
-		offsetY = me.getY() + 5;
-	}
-
 	public static int[][] genMatrix(BotInfo me, Bullet[] bullets, BotInfo[] targets, BotInfo[] deadTargets) {
 		int[][] matrix = new int[700][500];
-	
-		// ...
-	
-		Arrays.stream(bullets).parallel().forEach(bullet -> {
+
+		// Process bullets
+		for (Bullet bullet : bullets) {
 			int bulletX = (int) bullet.getX();
 			int bulletY = (int) bullet.getY();
-	
+
 			if (bulletX >= 0 && bulletX < 700 && bulletY >= 0 && bulletY < 500) {
 				matrix[bulletX][bulletY] = 5;
-	
+
 				int bulletXSpeed = (int) bullet.getXSpeed();
 				int bulletYSpeed = (int) bullet.getYSpeed();
-	
-				if (bulletXSpeed > 0) {
-					for (int i = 1; i <= 16 && bulletX + i < 700; i++) {
-						matrix[bulletX + i][bulletY] = 2;
+
+				// Handle bullet speed in different directions
+				for (int i = 1; i <= 16; i++) {
+					if (bulletXSpeed > 0 && bulletX + i < 700) {
+						matrix[bulletX + i][bulletY] = 2; // Bullet moving right
 					}
-				}
-				if (bulletXSpeed < 0) {
-					for (int i = 1; i <= 16 && bulletX - i >= 0; i++) {
-						matrix[bulletX - i][bulletY] = 2;
+					if (bulletXSpeed < 0 && bulletX - i >= 0) {
+						matrix[bulletX - i][bulletY] = 2; // Bullet moving left
 					}
-				}
-				if (bulletYSpeed > 0) {
-					for (int i = 1; i <= 16 && bulletY + i < 500; i++) {
-						matrix[bulletX][bulletY + i] = 2;
+					if (bulletYSpeed > 0 && bulletY + i < 500) {
+						matrix[bulletX][bulletY + i] = 2; // Bullet moving down
 					}
-				}
-				if (bulletYSpeed < 0) {
-					for (int i = 1; i <= 16 && bulletY - i >= 0; i++) {
-						matrix[bulletX][bulletY - i] = 2;
+					if (bulletYSpeed < 0 && bulletY - i >= 0) {
+						matrix[bulletX][bulletY - i] = 2; // Bullet moving up
 					}
 				}
 			}
-		});
-	
-		// ...
-	
-		Arrays.stream(targets).parallel().forEach(target -> {
-			// Calc casting only once.
+		}
+
+		// Process targets
+		for (BotInfo target : targets) {
 			int targetX = (int) target.getX();
 			int targetY = (int) target.getY();
-			for (int i=0;i<20;i++){
-				for (int r=0;r<20;r++){
-					matrix[targetX+i][targetY+r] = 4;
+			for (int i = 0; i < 20; i++) {
+				for (int r = 0; r < 20; r++) {
+					matrix[targetX + i][targetY + r] = 4; // Mark target area
 				}
 			}
-		});
-	
-		Arrays.stream(deadTargets).parallel().forEach(dTarget -> {
-			matrix[(int) dTarget.getX()][(int) dTarget.getY()] = 3;
-		});
-	
+		}
+
+		// Process dead targets
+		for (BotInfo dTarget : deadTargets) {
+			int dTargetX = (int) dTarget.getX();
+			int dTargetY = (int) dTarget.getY();
+			matrix[dTargetX][dTargetY] = 3; // Mark dead target
+		}
+
+		// Mark current bot position
+		int meX = (int) me.getX();
+		int meY = (int) me.getY();
+		for (int i = 0; i < 20; i++) {
+			for (int r = 0; r < 20; r++) {
+				matrix[meX + i][meY + r] = 1; // Mark bot position
+			}
+		}
 		return matrix;
 	}
-	
 
-	public static void printSubset(int[][] matrix, BotInfo me, int radius) {
-		int centerX = (int) me.getX();
-		int centerY = (int) me.getY();
-	
-		int startX = Math.max(centerX - radius, 0);
-		int endX = Math.min(centerX + radius, matrix.length - 1);
-	
-		int startY = Math.max(centerY - radius, 0);
-		int endY = Math.min(centerY + radius, matrix[0].length - 1);
-	
-		StringBuilder sb = new StringBuilder();
-	
-		for (int i = startX; i <= endX; i++) {
-			for (int j = startY; j <= endY; j++) {
-				if (i >= centerX && i < centerX + 2 && j >= centerY && j < centerY + 2) {
-					sb.append("[B] ");  // B represents the bot
-				} else {
-					sb.append(matrix[i][j]).append(" ");
+	public static void moveBot(int[][] matrix, int botX, int botY) {
+		final int RADIUS = 20;
+		final double BOT_SPEED = 1.5;
+		final int BULLET_SPEED = 4;
+
+		// Check if there are any bullets within the hit radius
+		for (int i = -RADIUS; i <= RADIUS; i++) {
+			for (int j = -RADIUS; j <= RADIUS; j++) {
+				int checkX = botX + i;
+				int checkY = botY + j;
+
+				if (checkX >= 0 && checkX < 700 && checkY >= 0 && checkY < 500) {
+					if (matrix[checkX][checkY] == 2) {
+						// Bullet found, calculate the direction to move
+						double distance = Math.sqrt(i * i + j * j);
+						double moveX = (i / distance) * BOT_SPEED;
+						double moveY = (j / distance) * BOT_SPEED;
+
+						// Try to move the bot horizontally
+						if (Math.abs(moveX) >= 1.0) {
+							int moveSteps = (int) Math.round(moveX);
+							int newX = botX + moveSteps;
+							if (newX >= 0 && newX < 700) {
+								if (matrix[newX][botY] == 0) {
+									matrix[botX][botY] = 0; // Clear the current bot position
+									botX = newX;
+									matrix[botX][botY] = 1; // Mark the new bot position
+								}
+							}
+						}
+
+						// Try to move the bot vertically
+						if (Math.abs(moveY) >= 1.0) {
+							int moveSteps = (int) Math.round(moveY);
+							int newY = botY + moveSteps;
+							if (newY >= 0 && newY < 500) {
+								if (matrix[botX][newY] == 0) {
+									matrix[botX][botY] = 0; // Clear the current bot position
+									botY = newY;
+									matrix[botX][botY] = 1; // Mark the new bot position
+								}
+							}
+						}
+					}
 				}
 			}
-			sb.append("\n");
 		}
-	
-		System.out.print(sb.toString());
 	}
-	
 
 }

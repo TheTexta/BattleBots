@@ -280,13 +280,14 @@ public class BattleBotArena extends JPanel implements MouseListener, MouseWheelL
 	/**
 	 * CPU limit per Bot per round
 	 */
-	public static final double 	PROCESSOR_LIMIT = 2.0;
+	//TODO  change back to 2.0
+	public static final double 	PROCESSOR_LIMIT = 100.0;
 	/**
 	 * Total number of Bots in round 1 (if you have fewer than this, the rest of the spots
 	 * in the array will be filled with Drones, RandBots, and Sentries).
 	 */
 	// TODO change back to 16
-	public static final int 	NUM_BOTS = 2;
+	public static final int 	NUM_BOTS = 3;
 	/**
 	 * Number of bullets on screen at once for each bot
 	 */
