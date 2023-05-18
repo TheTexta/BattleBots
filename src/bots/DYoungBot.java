@@ -47,11 +47,9 @@ import arena.Bullet;
 	public static final int STAY = 9;
  */
 
-
-
 public class DYoungBot extends Bot {
 	public static double offsetX = 0;
-	public static double offsetY=0;
+	public static double offsetY = 0;
 
 	private int[] moves = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
@@ -125,16 +123,18 @@ public class DYoungBot extends Bot {
 				}
 			} else {
 				// If i am furthe to the right of the bullet go right
-				if (offsetX > closeBullet.getX()){
+				if (offsetX > closeBullet.getX()) {
 					nextMove = BattleBotArena.RIGHT;
 					System.out.println("RIGHT");
-				// If i am further to the left of the bullet or in the center go left
-				}else{
+					// If i am further to the left of the bullet or in the center go left
+				} else {
 					nextMove = BattleBotArena.LEFT;
 					System.out.println("LEFT");
 				}
 			}
 		}
+
+		printSubset(genMatrix(me, bullets, liveBots, deadBots), me);
 
 		/*
 		 * Double[][] closest5 = closest5bullets(bullets, me);
@@ -245,8 +245,7 @@ public class DYoungBot extends Bot {
 		System.out.println(
 				"X:" + closeBullet.getX() + " Y:" + closeBullet.getY() + " Distance:" + getDistance(closeBullet, me));
 		System.out.println(
-			"ME: X:" + offsetX + " Y:" + offsetY
-		);
+				"ME: X:" + offsetX + " Y:" + offsetY);
 		return closeBullet;
 	}
 
@@ -307,18 +306,72 @@ public class DYoungBot extends Bot {
 	}
 
 	// Set offsetxy for me
-	public static void offsetXY(BotInfo me){
-		offsetX = me.getX()+5;
-		offsetY = me.getY()+5;
+	public static void offsetXY(BotInfo me) {
+		offsetX = me.getX() + 5;
+		offsetY = me.getY() + 5;
 	}
 
-	public static int[][] genMatrix (BotInfo me, Bullet[] bullets, BotInfo[] targets, BotInfo[] deadTargets){
+	public static int[][] genMatrix(BotInfo me, Bullet[] bullets, BotInfo[] targets, BotInfo[] deadTargets) {
 		int[][] matrix = new int[700][500];
-		for (Bullet bullet:bullets){
-			matrix[(int)bullet.getX()][(int)bullet.getY()] = 5;
+
+		// ...
+
+		for (Bullet bullet : bullets) {
+			int bulletX = (int) bullet.getX();
+			int bulletY = (int) bullet.getY();
+
+			if (bulletX >= 0 && bulletX < 700 && bulletY >= 0 && bulletY < 500) {
+				matrix[bulletX][bulletY] = 5;
+
+				int bulletXSpeed = (int)bullet.getXSpeed();
+				int bulletYSpeed = (int)bullet.getYSpeed();
+
+				for (int i = 1; i <= 16; i++) {
+					if (bulletXSpeed > 0 && bulletX + i < 700) {
+						matrix[bulletX + i][bulletY] = 2;
+					}
+					if (bulletXSpeed < 0 && bulletX - i >= 0) {
+						matrix[bulletX - i][bulletY] = 2;
+					}
+					if (bulletYSpeed > 0 && bulletY + i < 500) {
+						matrix[bulletX][bulletY + i] = 2;
+					}
+					if (bulletYSpeed < 0 && bulletY - i >= 0) {
+						matrix[bulletX][bulletY - i] = 2;
+					}
+				}
+			}
 		}
-		
+
+		// ...
+
+		for (BotInfo target : targets) {
+			matrix[(int) target.getX()][(int) target.getY()] = 4;
+		}
+
+		for (BotInfo target : deadTargets) {
+			matrix[(int) target.getX()][(int) target.getY()] = 3;
+		}
+
 		return matrix;
+	}
+
+	public static void printSubset(int[][] matrix, BotInfo me) {
+		int centerX = (int) me.getX();
+		int centerY = (int) me.getY();
+		
+		int startX = Math.max(centerX - 15, 0);
+		int endX = Math.min(centerX + 15, matrix.length - 1);
+		
+		int startY = Math.max(centerY - 15, 0);
+		int endY = Math.min(centerY + 15, matrix[0].length - 1);
+		
+		for (int i = startX; i <= endX; i++) {
+			for (int j = startY; j <= endY; j++) {
+				System.out.print(matrix[i][j] + " ");
+			}
+			System.out.println();
+		}
 	}
 
 }
