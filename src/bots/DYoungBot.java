@@ -109,7 +109,7 @@ public class DYoungBot extends Bot {
 
 		// check for incoming bullet trajectories
 		int[] dangerPos = checkGrid(matrix, me.getX() - 1, me.getY() - 1, me.getX() + 1 + 2 * RADIUS,
-				me.getY() + 1 + 2 * RADIUS);
+				me.getY() + 1 + 2 * RADIUS, 2);
 		if (dangerPos != null) {
 			// If the bullet is to the left of me
 			if (dangerPos[0] < me.getX()) {
@@ -140,6 +140,19 @@ public class DYoungBot extends Bot {
 					nextMove = BattleBotArena.RIGHT;
 				}
 			}
+		} else if (me.getX() < 15 || me.getX() + 2 * RADIUS > 685 || me.getY() < 15 || me.getY() + 2 * RADIUS > 385) {
+			// No danger. Check for nearby walls to move away from
+			if (me.getX() < 15) {
+				nextMove = BattleBotArena.RIGHT;
+			} else if (me.getX() + 2 * RADIUS > 685) {
+				nextMove = BattleBotArena.LEFT;
+			} else if (me.getY() < 15) {
+				nextMove = BattleBotArena.DOWN;
+			} else if (me.getY() + 2 * RADIUS > 385) {
+				nextMove = BattleBotArena.UP;
+			}
+		} else {
+			// Continue with current plan if available
 		}
 
 		// Update the matrix in the MatrixPanel
@@ -279,10 +292,10 @@ public class DYoungBot extends Bot {
 		return matrix;
 	}
 
-	public int[] checkGrid(int[][] matrix, int startX, int startY, int endX, int endY) {
+	public int[] checkGrid(int[][] matrix, int startX, int startY, int endX, int endY, int value) {
 		for (int x = 0; x < (endX - startX); x++) {
 			for (int y = 0; y < (endY - startY); y++) {
-				if (matrix[x + startX][y + startY] == 2) {
+				if (matrix[x + startX][y + startY] == value) {
 					return new int[] { x + startX, y + startY };
 				}
 			}
@@ -290,8 +303,8 @@ public class DYoungBot extends Bot {
 		return null;
 	}
 
-	public int[] checkGrid(int[][] matrix, double startX, double startY, double endX, double endY) {
-		return checkGrid(matrix, (int) startX, (int) startY, (int) endX, (int) endY);
+	public int[] checkGrid(int[][] matrix, double startX, double startY, double endX, double endY, int value) {
+		return checkGrid(matrix, (int) startX, (int) startY, (int) endX, (int) endY, value);
 	}
 
 }
