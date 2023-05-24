@@ -120,21 +120,22 @@ public class DYoungBot extends Bot {
 					nextMove = BattleBotArena.DOWN;
 				}
 			} // If the bullet is to the right of me
-			else if (dangerPos[0] > (me.getX() + (RADIUS * 2))) {
+			else if (dangerPos[0] > Math.floor(me.getX() + (RADIUS * 2))) {
+				// If i am lower then the bullet
 				if (dangerPos[1] > me.getY() - RADIUS) {
 					nextMove = BattleBotArena.UP;
 				} else {
 					nextMove = BattleBotArena.DOWN;
 				}
 			} // If the bullet is above me
-			else if (dangerPos[1] < me.getY()) {
+			else if (dangerPos[1] <= me.getY()) {
 				if (dangerPos[0] > me.getX() + RADIUS) {
 					nextMove = BattleBotArena.LEFT;
 				} else {
 					nextMove = BattleBotArena.RIGHT;
 				}
 			} // If the bullet is below me
-			else if (dangerPos[1] > (me.getY() + (RADIUS * 2))) {
+			else if (dangerPos[1] >= Math.floor(me.getY() + (RADIUS * 2))) {
 				if (dangerPos[0] > me.getX() + RADIUS) {
 					nextMove = BattleBotArena.LEFT;
 				} else {
@@ -248,7 +249,7 @@ public class DYoungBot extends Bot {
 
 				// Handle bullet speed in different directions
 				// TODO calc exact trajectory distance. currently 28
-				for (int i = 1; i <= 28; i++) {
+				for (int i = 1; i <= 30; i++) {
 					if (bulletXSpeed > 0 && bulletX + i < 700) {
 						matrix[bulletX + i][bulletY] = 2; // Bullet moving right
 					}
