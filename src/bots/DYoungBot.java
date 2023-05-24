@@ -108,9 +108,10 @@ public class DYoungBot extends Bot {
 		int[][] matrix = genMatrix(me, bullets, liveBots, deadBots);
 
 		// check for incoming bullet trajectories
-		int[] dangerPos = checkGrid(matrix, me.getX() - 1, me.getY() - 1, me.getX() + 1 + 2 * RADIUS,
-				me.getY() + 1 + 2 * RADIUS, 2);
+		int[] dangerPos = checkGrid(matrix, me.getX() - 1, me.getY() - 1, me.getX() + 1 + (2 * RADIUS),
+				me.getY() + 1 + (2 * RADIUS), 2);
 		if (dangerPos != null) {
+			System.out.println("DANGER!");
 			// If the bullet is to the left of me
 			if (dangerPos[0] < me.getX()) {
 				if (dangerPos[1] > me.getY() - RADIUS) {
@@ -119,7 +120,7 @@ public class DYoungBot extends Bot {
 					nextMove = BattleBotArena.DOWN;
 				}
 			} // If the bullet is to the right of me
-			else if (dangerPos[0] > (me.getX() + RADIUS * 2)) {
+			else if (dangerPos[0] > (me.getX() + (RADIUS * 2))) {
 				if (dangerPos[1] > me.getY() - RADIUS) {
 					nextMove = BattleBotArena.UP;
 				} else {
@@ -133,24 +134,25 @@ public class DYoungBot extends Bot {
 					nextMove = BattleBotArena.RIGHT;
 				}
 			} // If the bullet is below me
-			else if (dangerPos[1] > (me.getY() + RADIUS * 2)) {
+			else if (dangerPos[1] > (me.getY() + (RADIUS * 2))) {
 				if (dangerPos[0] > me.getX() + RADIUS) {
 					nextMove = BattleBotArena.LEFT;
 				} else {
 					nextMove = BattleBotArena.RIGHT;
 				}
 			}
-		} else if (me.getX() < 15 || me.getX() + 2 * RADIUS > 685 || me.getY() < 15 || me.getY() + 2 * RADIUS > 385) {
+		} else if (me.getX() < 15 || me.getX() + (2 * RADIUS) > 685 || me.getY() < 15 || me.getY() + (2 * RADIUS) > 485) {
 			// No danger. Check for nearby walls to move away from
 			if (me.getX() < 15) {
 				nextMove = BattleBotArena.RIGHT;
-			} else if (me.getX() + 2 * RADIUS > 685) {
+			} else if (me.getX() + (2 * RADIUS) > 685) {
 				nextMove = BattleBotArena.LEFT;
 			} else if (me.getY() < 15) {
 				nextMove = BattleBotArena.DOWN;
-			} else if (me.getY() + 2 * RADIUS > 385) {
+			} else if (me.getY() + (2 * RADIUS) > 485) {
 				nextMove = BattleBotArena.UP;
 			}
+			System.out.println(me.getX() + " " + me.getY());
 		} else {
 			// Continue with current plan if available
 		}
