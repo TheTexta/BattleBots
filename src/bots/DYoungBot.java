@@ -6,6 +6,9 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import javax.swing.JFrame;
 
@@ -102,65 +105,98 @@ public class DYoungBot extends Bot {
 	public int getMove(BotInfo me, boolean shotOK, BotInfo[] liveBots, BotInfo[] deadBots, Bullet[] bullets) {
 		// Integer to store the next move a bot will take.
 		int nextMove;
+		int safetyRadius = 50;
 
 		nextMove = BattleBotArena.STAY;
 
 		int[][] matrix = genMatrix(me, bullets, liveBots, deadBots);
 
 		// check for incoming bullet trajectories
-		int[] dangerPos = checkGrid(matrix, me.getX() - 1, me.getY() - 1, me.getX() + 1 + (2 * RADIUS),
+		List<int[]> dangerPos = checkGrid(matrix, me.getX() - 1, me.getY() - 1, me.getX() + 1 + (2 * RADIUS),
 				me.getY() + 1 + (2 * RADIUS), 2);
-		if (dangerPos != null) {
-			System.out.println("DANGER!");
+		if (!dangerPos.isEmpty()) {
 			// If the bullet is to the left of me
-			if (dangerPos[0] < me.getX()) {
-				if (dangerPos[1] > me.getY() - RADIUS) {
+			if (dangerPos.get(0)[0] < me.getX()) {
+				if (dangerPos.get(0)[1] > me.getY() + RADIUS) {
 					nextMove = BattleBotArena.UP;
 				} else {
 					nextMove = BattleBotArena.DOWN;
 				}
 			} // If the bullet is to the right of me
-			else if (dangerPos[0] > Math.floor(me.getX() + (RADIUS * 2))) {
+			else if (dangerPos.get(0)[0] >= Math.floor(me.getX() + (RADIUS * 2))) {
 				// If i am lower then the bullet
-				if (dangerPos[1] > me.getY() - RADIUS) {
+				if (dangerPos.get(0)[1] > me.getY() + RADIUS) {
 					nextMove = BattleBotArena.UP;
 				} else {
 					nextMove = BattleBotArena.DOWN;
 				}
 			} // If the bullet is above me
-			else if (dangerPos[1] <= me.getY()) {
-				if (dangerPos[0] > me.getX() + RADIUS) {
+			else if (dangerPos.get(0)[1] <= me.getY()) {
+				if (dangerPos.get(0)[0] > me.getX() + RADIUS) {
 					nextMove = BattleBotArena.LEFT;
 				} else {
 					nextMove = BattleBotArena.RIGHT;
 				}
 			} // If the bullet is below me
-			else if (dangerPos[1] >= Math.floor(me.getY() + (RADIUS * 2))) {
-				if (dangerPos[0] > me.getX() + RADIUS) {
+			else if (dangerPos.get(0)[1] >= Math.floor(me.getY() + (RADIUS * 2))) {
+				if (dangerPos.get(0)[0] > me.getX() + RADIUS) {
 					nextMove = BattleBotArena.LEFT;
 				} else {
 					nextMove = BattleBotArena.RIGHT;
 				}
+			} else {
+				System.out.println("Staying");
+				nextMove = BattleBotArena.STAY; // Bullet passing by but not on trajectory to hit player
 			}
-		} else if (me.getX() < 15 || me.getX() + (2 * RADIUS) > 685 || me.getY() < 15 || me.getY() + (2 * RADIUS) > 485) {
+			System.out.println("Case 1");
+			System.out.println(
+					"Centered coords: " + (me.getX() + RADIUS) + " " + (me.getY() + RADIUS) + " : Dodging Bullet");
+			System.out.println("Bullet Trajectory: " + dangerPos.get(0)[0] + " " + dangerPos.get(0)[1]);
+		}
+
+		else if (!checkGrid(matrix, me.getX() - 2, me.getY() - 2, me.getX() + 2 + (2 * RADIUS),
+				me.getY() + 2 + (2 * RADIUS), 5).isEmpty()) { // Check for bullets passing nearby
+
+			nextMove = BattleBotArena.STAY;
+			System.out.println("Case 2");
+
+		}
+
+		else if (me.getX() < safetyRadius || me.getX() + (2 * RADIUS) > (700 - safetyRadius)
+				|| me.getY() < safetyRadius || me.getY() + (2 * RADIUS) > (500 - safetyRadius)) {
 			// No danger. Check for nearby walls to move away from
-			if (me.getX() < 15) {
+			System.out.println("Case 3");
+			if (me.getX() < safetyRadius) {
 				nextMove = BattleBotArena.RIGHT;
-			} else if (me.getX() + (2 * RADIUS) > 685) {
+			} else if ((me.getX() + (2 * RADIUS)) > (700 - safetyRadius)) {
 				nextMove = BattleBotArena.LEFT;
-			} else if (me.getY() < 15) {
+			} else if (me.getY() < safetyRadius) {
 				nextMove = BattleBotArena.DOWN;
-			} else if (me.getY() + (2 * RADIUS) > 485) {
+			} else if (me.getY() + (2 * RADIUS) > (500 - safetyRadius)) {
 				nextMove = BattleBotArena.UP;
 			}
-			System.out.println(me.getX() + " " + me.getY());
-		} else {
+			System.out.println(me.getX() + " " + me.getY() + " : Moving away from wall");
+		} 
+		
+		else if (!checkGrid(matrix, me.getX() - safetyRadius, me.getY() - safetyRadius,
+				me.getX() + safetyRadius + (2 * RADIUS),
+				me.getY() + safetyRadius + (2 * RADIUS), 4).isEmpty()) { // Check for nearby bots alive bots
+			System.out.println("Case 4");
+
+		} 
+		
+		else {
+			System.out.println("Case 5");
 			// Continue with current plan if available
+			// TODO implement a seeking method and a bot dodging method so that bots dont
+			// get too close
 		}
 
 		// Update the matrix in the MatrixPanel
 		panel.setMatrix(matrix);
 		panel.repaint();
+
+		System.out.println("Move: "+ nextMove);
 
 		return nextMove;
 
@@ -295,18 +331,21 @@ public class DYoungBot extends Bot {
 		return matrix;
 	}
 
-	public int[] checkGrid(int[][] matrix, int startX, int startY, int endX, int endY, int value) {
-		for (int x = 0; x < (endX - startX); x++) {
-			for (int y = 0; y < (endY - startY); y++) {
-				if (matrix[x + startX][y + startY] == value) {
-					return new int[] { x + startX, y + startY };
+	public List<int[]> checkGrid(int[][] matrix, int startX, int startY, int endX, int endY, int value) {
+		List<int[]> positions = new ArrayList<>();
+
+		for (int x = startX; x < endX; x++) {
+			for (int y = startY; y < endY; y++) {
+				if (matrix[x][y] == value) {
+					positions.add(new int[] { x, y });
 				}
 			}
 		}
-		return null;
+
+		return positions;
 	}
 
-	public int[] checkGrid(int[][] matrix, double startX, double startY, double endX, double endY, int value) {
+	public List<int[]> checkGrid(int[][] matrix, double startX, double startY, double endX, double endY, int value) {
 		return checkGrid(matrix, (int) startX, (int) startY, (int) endX, (int) endY, value);
 	}
 
