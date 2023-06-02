@@ -4,7 +4,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import arena.BattleBotArena;
 import arena.BotInfo;
@@ -51,11 +55,14 @@ import java.io.DataInput;
  */
 
 public class DYoungBot extends Bot {
-	// MatrixPanel panel = new MatrixPanel(new int[700][500]);
-	public static boolean start = false;
 	public long timeSinceShot = System.nanoTime();
 	private static final int GRID_WIDTH = 700;
 	private static final int GRID_HEIGHT = 500;
+	static final int[][] DIRECTIONS = {
+        {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+    };
+
+	// TODO comment out above
 
 	/**
 	 * Next message to send, or null if nothing to send.
@@ -110,158 +117,15 @@ public class DYoungBot extends Bot {
 
 		int[][] matrix = genMatrix(me, bullets, liveBots, deadBots);
 
-		/*
-		 * // check for incoming bullet trajectories
-		 * List<int[]> dangerPos = checkGrid(matrix, me.getX() - 2, me.getY() - 2,
-		 * me.getX() + 2 + (2 * RADIUS),
-		 * me.getY() + 2 + (2 * RADIUS), 2);
-		 * if (!dangerPos.isEmpty()) {
-		 * // If the bullet is to the left of me
-		 * if (dangerPos.get(0)[0] < me.getX()) {
-		 * if (dangerPos.get(0)[1] > me.getY() + RADIUS) {
-		 * nextMove = BattleBotArena.UP;
-		 * } else {
-		 * nextMove = BattleBotArena.DOWN;
-		 * }
-		 * } // If the bullet is to the right of me
-		 * else if (dangerPos.get(0)[0] >= Math.floor(me.getX() + (RADIUS * 2))) {
-		 * // If i am lower then the bullet
-		 * if (dangerPos.get(0)[1] > me.getY() + RADIUS) {
-		 * nextMove = BattleBotArena.UP;
-		 * } else {
-		 * nextMove = BattleBotArena.DOWN;
-		 * }
-		 * } // If the bullet is above me
-		 * else if (dangerPos.get(0)[1] <= me.getY()) {
-		 * if (dangerPos.get(0)[0] > me.getX() + RADIUS) {
-		 * nextMove = BattleBotArena.LEFT;
-		 * } else {
-		 * nextMove = BattleBotArena.RIGHT;
-		 * }
-		 * } // If the bullet is below me
-		 * else if (dangerPos.get(0)[1] >= Math.floor(me.getY() + (RADIUS * 2))) {
-		 * if (dangerPos.get(0)[0] > me.getX() + RADIUS) {
-		 * nextMove = BattleBotArena.LEFT;
-		 * } else {
-		 * nextMove = BattleBotArena.RIGHT;
-		 * }
-		 * } else {
-		 * System.out.println("Staying");
-		 * nextMove = BattleBotArena.STAY; // Bullet passing by but not on trajectory to
-		 * hit player
-		 * }
-		 * System.out.println("Case 1");
-		 * System.out.println(
-		 * "Centered coords: " + (me.getX() + RADIUS) + " " + (me.getY() + RADIUS) +
-		 * " : Dodging Bullet");
-		 * System.out.println("Bullet Trajectory: " + dangerPos.get(0)[0] + " " +
-		 * dangerPos.get(0)[1]);
-		 * }
-		 * 
-		 * else if (!checkGrid(matrix, me.getX() - 2, me.getY() - 2, me.getX() + 2 + (2
-		 * * RADIUS),
-		 * me.getY() + 2 + (2 * RADIUS), 5).isEmpty()) { // Check for bullets passing
-		 * nearby
-		 * 
-		 * nextMove = BattleBotArena.STAY;
-		 * System.out.println("Case 2");
-		 * 
-		 * }
-		 * 
-		 * else if (!checkGrid(matrix, me.getX() - safetyRadius, me.getY() -
-		 * safetyRadius,
-		 * me.getX() + safetyRadius + (2 * RADIUS),
-		 * me.getY() + safetyRadius + (2 * RADIUS), 4).isEmpty()
-		 * || !checkGrid(matrix, me.getX() - safetyRadius, me.getY() - safetyRadius,
-		 * me.getX() + safetyRadius + (2 * RADIUS),
-		 * me.getY() + safetyRadius + (2 * RADIUS), 3).isEmpty()
-		 * || me.getX() < safetyRadius || me.getX() + (2 * RADIUS) > (700 -
-		 * safetyRadius)
-		 * || me.getY() < safetyRadius || me.getY() + (2 * RADIUS) > (500 -
-		 * safetyRadius)) {
-		 * // Nobody can save whoever has to read this entire if else statement.
-		 * // It checks for dead/alive bots wihtin a safety radius and checks if the
-		 * player
-		 * // is near a wall.
-		 * System.out.println("Case 3");
-		 * List<int[]> objectPositions = checkGrid(matrix, me.getX() - safetyRadius,
-		 * me.getY() - safetyRadius,
-		 * me.getX() + safetyRadius + (2 * RADIUS),
-		 * me.getY() + safetyRadius + (2 * RADIUS), 4);
-		 * objectPositions.addAll(checkGrid(matrix, me.getX() - safetyRadius, me.getY()
-		 * - safetyRadius,
-		 * me.getX() + safetyRadius + (2 * RADIUS),
-		 * me.getY() + safetyRadius + (2 * RADIUS), 3));
-		 * /*
-		 * objectPositions.addAll(checkGrid(matrix, me.getX() - safetyRadius, me.getY()
-		 * - safetyRadius,
-		 * me.getX() + safetyRadius + (2 * RADIUS),
-		 * me.getY() + safetyRadius + (2 * RADIUS), 2));
-		 *//*
-			 * System.out.println(objectPositions.isEmpty());
-			 * 
-			 * Point vector = optimalMove(me, objectPositions, dangerPos,safetyRadius);
-			 * if (Math.abs(vector.x) > Math.abs(vector.y)) {
-			 * if (vector.x < 0) {
-			 * nextMove = BattleBotArena.LEFT;
-			 * } else {
-			 * nextMove = BattleBotArena.RIGHT;
-			 * }
-			 * } else {
-			 * if (vector.y < 0) {
-			 * nextMove = BattleBotArena.UP;
-			 * } else {
-			 * nextMove = BattleBotArena.DOWN;
-			 * }
-			 * }
-			 * 
-			 * }
-			 * 
-			 * else if (Math.abs(timeSinceShot - System.nanoTime()) > (1000000000) / 4) {
-			 * List<int[]> objectPositions = checkGrid(matrix, me.getX() - safetyRadius,
-			 * me.getY() - safetyRadius,
-			 * me.getX() + safetyRadius + (2 * RADIUS),
-			 * me.getY() + safetyRadius + (2 * RADIUS), 4);
-			 * objectPositions.addAll(checkGrid(matrix, me.getX() - safetyRadius, me.getY()
-			 * - safetyRadius,
-			 * me.getX() + safetyRadius + (2 * RADIUS),
-			 * me.getY() + safetyRadius + (2 * RADIUS), 3));
-			 * Point vector = optimalMove(me, objectPositions,dangerPos, safetyRadius);
-			 * if (Math.abs(vector.x) > Math.abs(vector.y)) {
-			 * if (vector.x < 0) {
-			 * nextMove = BattleBotArena.LEFT;
-			 * } else {
-			 * nextMove = BattleBotArena.RIGHT;
-			 * }
-			 * } else {
-			 * if (vector.y < 0) {
-			 * nextMove = BattleBotArena.UP;
-			 * } else {
-			 * nextMove = BattleBotArena.DOWN;
-			 * }
-			 * }
-			 * 
-			 * System.out.println("Case 4"); // Seek and destroy
-			 * 
-			 * // timeSinceShot = System.nanoTime();
-			 * 
-			 * } else {
-			 * nextMove = BattleBotArena.STAY;
-			 * // Nothing to do
-			 * System.out.println(Math.abs(timeSinceShot - System.nanoTime()));
-			 * }
-			 */
-
-		List<int[]> objectPositions = checkGrid(matrix, me.getX() - safetyRadius, me.getY() - safetyRadius,
-				me.getX() + safetyRadius + (2 * RADIUS),
-				me.getY() + safetyRadius + (2 * RADIUS), 4);
+		List<int[]> objectPositions = checkGrid(matrix, 0, 0, GRID_WIDTH, GRID_HEIGHT, 4);
 		objectPositions.addAll(checkGrid(matrix, me.getX() - safetyRadius, me.getY() - safetyRadius,
 				me.getX() + safetyRadius + (2 * RADIUS),
 				me.getY() + safetyRadius + (2 * RADIUS), 3));
-		List<int[]> bulletPos = checkGrid(matrix, me.getX() - safetyRadius, me.getY() - safetyRadius,
-				me.getX() + safetyRadius + (2 * RADIUS),
-				me.getY() + safetyRadius + (2 * RADIUS), 2);
+		List<int[]> bulletPos = checkGrid(matrix, me.getX() - safetyRadius * 2, me.getY() - safetyRadius * 2,
+				me.getX() + safetyRadius * 2 + (2 * RADIUS),
+				me.getY() + safetyRadius * 2 + (2 * RADIUS), 5);
 		Point vector = optimalMove(me, objectPositions, bulletPos, safetyRadius);
+
 		if (Math.abs(vector.x) > Math.abs(vector.y)) {
 			if (vector.x < 0) {
 				nextMove = BattleBotArena.LEFT;
@@ -276,27 +140,98 @@ public class DYoungBot extends Bot {
 			}
 		}
 
-		// Update the matrix in the MatrixPanel
-		// panel.setMatrix(matrix);
-		// panel.repaint();
-
 		System.out.println("Move: " + nextMove);
 
 		return nextMove;
 
 	}
 
-	/**
-	 * 
-	 */
-	public void newRound() {
-		// ***not essential - you may do some initializing of your bot before round
-		// begins
-		if (!start) {
-			// panel.createAndShowGUI();
-			start = true;
+	private Point optimalMove(BotInfo me, List<int[]> obstacles, List<int[]> bullets, int safeDistance) {
+		Point position = new Point((int) me.getX() + RADIUS, (int) me.getY() + RADIUS);
+
+		Point resultantVector = new Point(0, 0);
+
+		if (!obstacles.isEmpty()) {
+			for (int[] obstacle : obstacles) {
+				Point obstacleVector = new Point(position.x - obstacle[0], position.y - obstacle[1]);
+				double distance = getDistance(0, 0, obstacleVector.x, obstacleVector.y);
+				double weighting = (1 / distance) * safeDistance;
+				if (weighting < 1) {
+					weighting = 0;
+				}
+				resultantVector.x += obstacleVector.x * weighting;
+				resultantVector.y += obstacleVector.y * weighting;
+			} /*
+				 * resultantVector.x /= obstacles.size();
+				 * resultantVector.y /= obstacles.size();
+				 */
+		}
+		System.out.println("Object X: " + resultantVector.x + ", Object Y: " + resultantVector.y);
+		System.out.println("Angle: " + (Math.atan2(resultantVector.y, resultantVector.x) * (180 / Math.PI)));
+
+		Point bulletTotal = new Point(0, 0);
+		if (!bullets.isEmpty()) {
+			for (int[] bullet : bullets) {
+				Point bulletVector = new Point(position.x - bullet[0], position.y - bullet[1]);
+				// Same x axis
+				if (Math.abs(bullet[1] - position.y) <= RADIUS + 5) {
+					bulletVector.x = 0;
+				} else if (Math.abs(bullet[0] - position.x) <= RADIUS + 5) {
+					bulletVector.y = 0;
+				} else if (getDistance(position.x, position.y, bullet[0], bullet[1]) < RADIUS + 5) {
+					bulletVector.x *= 0.5;
+					bulletVector.y *= 0.5;
+				} else {
+					// Bullet not on a trajectory to hit me therefor isnt that important
+					bulletVector.x *= 0.1;
+					bulletVector.y *= 0.1;
+				}
+				double distance = getDistance(0, 0, bulletVector.x, bulletVector.y);
+				double weighting = (1 / distance) * (RADIUS + 30);
+				bulletTotal.x += bulletVector.x * weighting;
+				bulletTotal.y += bulletVector.y * weighting;
+			}
 		}
 
+
+		resultantVector.x += bulletTotal.x;
+		resultantVector.y += bulletTotal.y;
+
+		// Generate edge vector
+		Point edgeVector = edgeVector(position, safeDistance);
+		// edgeVector.x *= 0.5;
+		// edgeVector.y *= 0.5;
+
+		// Generate and weight center vector
+		Point centerVector = new Point((GRID_WIDTH / 2) - position.x, (GRID_HEIGHT / 2) - position.y);
+		double centerWeighting = (getDistance(0, 0, centerVector.x, centerVector.y)) * 0.0001;
+		centerVector.x *= centerWeighting;
+		centerVector.y *= centerWeighting;
+
+		// Add all additional vectors
+		// Add edge vector (to keep bot away from walls)
+		resultantVector.x += edgeVector.x;
+		resultantVector.y += edgeVector.y;
+
+		/*
+		 * Add centerVector (attracts bot to center and gives it a direction
+		 * when vectors around bot are at approx equilibrium) eg when an obstacle is
+		 * above and bellow a bot. Could be updated to only take effect when resultant
+		 * vector is below a certain magnitude.
+		 */
+		resultantVector.x += centerVector.x;
+		resultantVector.y += centerVector.y;
+
+		System.out.println("Bullet X: " + bulletTotal.x + ", Bullet Y: " + bulletTotal.y);
+		System.out.println("Center X: " + centerVector.x + ", Center Y: " + centerVector.y);
+		System.out.println("Edge X: " + edgeVector.x + ", Center Y: " + edgeVector.y);
+		System.out.println("Final X: " + resultantVector.x + ", Final Y: " + resultantVector.y);
+		
+
+		return resultantVector;
+	}
+
+	public void newRound() {
 	}
 
 	/**
@@ -446,73 +381,11 @@ public class DYoungBot extends Bot {
 		return Math.hypot(x2 - x, y2 - y);
 	}
 
-	private Point optimalMove(BotInfo me, List<int[]> obstacles, List<int[]> bullets, int safeDistance) {
-		Point position = new Point((int) me.getX() + RADIUS, (int) me.getY() + RADIUS);
-
-		Point resultantVector = new Point(0, 0);
-
-		if (!obstacles.isEmpty()) {
-			for (int[] obstacle : obstacles) {
-				Point obstacleVector = new Point(position.x - obstacle[0], position.y - obstacle[1]);
-				double distance = getDistance(0, 0, obstacleVector.x, obstacleVector.y);
-				double weighting = (1 / distance) * safeDistance;
-				resultantVector.x += obstacleVector.x * weighting;
-				resultantVector.y += obstacleVector.y * weighting;
-			}
-			resultantVector.x /= obstacles.size();
-			resultantVector.y /= obstacles.size();
-		}
-
-		Point bulletTotal = new Point(0, 0);
-		if (!bullets.isEmpty()) {
-			for (int[] bullet : bullets) {
-				Point bulletVector = new Point(position.x - bullet[0], position.y - bullet[1]);
-				// Same x axis
-				if ((bullet[0] >= (position.x - RADIUS) || bullet[0] >= (position.x) + RADIUS)&& (Math.abs(bullet[1]-position.y)<=RADIUS)) {
-					bulletVector.x = 0;
-				} else {
-					bulletVector.y = 0;
-				}
-				double distance = getDistance(0, 0, bulletVector.x, bulletVector.y);
-				double weighting = (1 / distance) * RADIUS;
-				bulletTotal.x += bulletVector.x * weighting;
-				bulletTotal.y += bulletVector.y * weighting;
-			}
-		}
-		System.out.println("Bullet X: " + bulletTotal.x + ", Bullet Y: " + bulletTotal.y);
-
-		resultantVector.x += bulletTotal.x;
-		resultantVector.y += bulletTotal.y;
-
-		// Generate edge vector
-		Point edgeVector = edgeVector(position, safeDistance);
-		edgeVector.x *= 0.25;
-		edgeVector.y *= 0.25;
-
-		// Generate and weight center vector
-		Point centerVector = new Point((GRID_WIDTH / 2) - position.x, (GRID_HEIGHT / 2) - position.y);
-		double centerWeighting = (getDistance(0, 0, centerVector.x, centerVector.y)) * 0.0005;
-		centerVector.x *= centerWeighting;
-		centerVector.y *= centerWeighting;
-
-		// Add all additional vectors
-		// Add edge vector (to keep bot away from walls)
-		resultantVector.x += edgeVector.x;
-		resultantVector.y += edgeVector.y;
-
-		/*
-		 * Add centerVector (attracts bot to center and gives it a direction
-		 * when vectors around bot are at approx equilibrium) eg when an obstacle is
-		 * above and bellow a bot. Could be updated to only take effect when resultant
-		 * vector is below a certain magnitude.
-		 */
-		resultantVector.x += centerVector.x;
-		resultantVector.y += centerVector.y;
-
-		System.out.println(resultantVector);
-		System.out.println(centerVector);
-
-		return resultantVector;
+	private void simplifyPoint(Point input){
+		if (Math.abs(input.x)>Math.abs(input.y))
+			input.y=0;
+		else
+			input.x=0;
 	}
 
 	private Point edgeVector(Point position, int safeDistance) {
