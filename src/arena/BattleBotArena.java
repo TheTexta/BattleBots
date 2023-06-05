@@ -377,7 +377,7 @@ public class BattleBotArena extends JPanel
 	 * in the array will be filled with Drones, RandBots, and Sentries).
 	 */
 	// TODO change back to 16
-	public static final int NUM_BOTS = 2;
+	public static final int NUM_BOTS = 16;
 	/**
 	 * Number of bullets on screen at once for each bot
 	 */
