@@ -117,7 +117,11 @@ public class DYoungBot extends Bot {
 		int move = defaultMove;
 
 		// Evaluate if a smart move is needed based on the default move and neighboring
-		// moves
+		// moves. Smart move is activiated if the move the bot takes is followed by a
+		// move back to its original location. this indicates that the bot will enter a
+		// loop going back and forth between the two directions, so it is more optimal
+		// for the bot to move in a different direction to the initial vectormove result
+		// which doesnt take this into account.
 		if (defaultMove + moveRight == 7 || defaultMove + moveLeft == 7) {
 			System.out.println("Smart Move activated");
 			// Left/Right loop
@@ -311,13 +315,13 @@ public class DYoungBot extends Bot {
 			}
 		}
 
-		if ((Math.abs(vector.x) < 20 && Math.abs(vector.y) < 20)&&(System.nanoTime()-timeSinceShot)>1000000000) {
+		if ((Math.abs(vector.x) < 20 && Math.abs(vector.y) < 20) && (System.nanoTime() - timeSinceShot) > 1000000000) {
 			System.out.println("Moving to near bot");
 			// If there is nothing to dodge of significance, move to attack the nearest bot.
 
 			double nearestBotDistance = Double.MAX_VALUE;
 			BotInfo nearestBot = null;
-		
+
 			// Find the nearest live bot
 			for (BotInfo bot : liveBots) {
 				double distance = getDistance(x, y, (int) bot.getX(), (int) bot.getY());
@@ -326,7 +330,7 @@ public class DYoungBot extends Bot {
 					nearestBot = bot;
 				}
 			}
-		
+
 			if (nearestBot != null) {
 				// Move towards the nearest bot on the same x/y axis
 				if (Math.abs(x - nearestBot.getX()) > Math.abs(y - nearestBot.getY())) {
@@ -342,25 +346,25 @@ public class DYoungBot extends Bot {
 						nextMove = BattleBotArena.UP;
 					}
 				}
-		
-				if(Math.abs(x-nearestBot.getX())<RADIUS-1){
+
+				// Check if bot is on the same axis withn +/- Radius -1. If it is change the
+				// nextmove to shoot at the bot.
+				if (Math.abs(x - nearestBot.getX()) < RADIUS - 1) {
 					timeSinceShot = System.nanoTime();
-					if (y>nearestBot.getY()){
+					if (y > nearestBot.getY()) {
 						nextMove = BattleBotArena.FIREUP;
-					}
-					else{
+					} else {
 						nextMove = BattleBotArena.FIREDOWN;
 					}
-				} else if (Math.abs(y-nearestBot.getY())<RADIUS-1){
+				} else if (Math.abs(y - nearestBot.getY()) < RADIUS - 1) {
 					timeSinceShot = System.nanoTime();
-					if (x>nearestBot.getX()){
+					if (x > nearestBot.getX()) {
 						nextMove = BattleBotArena.FIRELEFT;
-					}
-					else{
+					} else {
 						nextMove = BattleBotArena.FIRERIGHT;
 					}
 				}
-		
+
 			} else {
 				// No live bots found, stay in place
 				nextMove = BattleBotArena.STAY;
